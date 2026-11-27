@@ -1,0 +1,4 @@
+# NOVA 5.0 is a static PWA with no build step: the site is served as-is from docs/.
+[build]
+  publish = "docs"
+  command = ""
