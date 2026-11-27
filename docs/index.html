@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="NOVA">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <title>NOVA 5.0</title>
 <style>
 :root{--bg:#03090d;--pn:#071a21;--ln:#12707c;--cy:#36f3ee;--tx:#d9ffff;--mu:#6fa7af;--rd:#ff526b;--gr:#55ffb0;--am:#f5d76e}
@@ -681,7 +681,7 @@ addEventListener('error',e=>info('⚠ '+(e.message||'Unexpected error')));
 addEventListener('unhandledrejection',e=>info('⚠ '+(e.reason?.message||'Unexpected error')));
 
 // PWA: installable + works offline; updates itself quietly (network-first)
-if('serviceWorker'in navigator&&/^https?:$/.test(location.protocol))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+if('serviceWorker'in navigator&&/^https?:$/.test(location.protocol))addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
 try{navigator.storage?.persist?.()}catch{}
 </script>
 <style>
