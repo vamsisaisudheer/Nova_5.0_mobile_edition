@@ -1,13 +1,8 @@
-const CACHE = 'nova-v2';
+const CACHE = 'nova-v1';
 const ASSETS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', e => {
-  // Cache each asset separately so one missing file can't break installation
-  e.waitUntil(
-    caches.open(CACHE)
-      .then(c => Promise.all(ASSETS.map(a => c.add(a).catch(err => console.warn('SW cache miss:', a, err)))))
-      .then(() => self.skipWaiting())
-  );
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -23,10 +18,8 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        if (res && res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, copy));
-        }
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copy));
         return res;
       })
       .catch(() => caches.match(e.request).then(r => r || caches.match('/index.html')))
