@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#03090d">
+<title>NOVA deploy check</title>
+<style>
+body{margin:0;padding:18px;background:#03090d;color:#d8f6fa;font:16px/1.5 system-ui,sans-serif}
+h1{font-size:20px;color:#36f3ee;margin:0 0 4px}
+p{margin:4px 0 14px;color:#9bbfc6;font-size:14px}
+.r{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin:8px 0;border:1px solid #124650;border-radius:12px;background:#06171d}
+.r b{flex:none;width:24px}
+.r small{display:block;color:#9bbfc6;font-size:13px}
+.ok{border-color:#1f8f5a}.bad{border-color:#b04050}
+button,a.btn{display:inline-block;margin:6px 6px 0 0;padding:10px 16px;border-radius:12px;border:1px solid #36f3ee;background:#06171d;color:#d8f6fa;font:inherit;text-decoration:none}
+</style></head><body>
+<h1>NOVA deploy check</h1>
+<p>Open this page on your live site (…vercel.app/check.html). Every line should show ✅. Fix any ❌ line, redeploy, and refresh.</p>
+<div id="out"></div>
+<div id="act"></div>
+<script>
+const out=document.getElementById('out'),act=document.getElementById('act');
+function row(ok,title,hint){const d=document.createElement('div');d.className='r '+(ok?'ok':'bad');d.innerHTML='<b>'+(ok?'✅':'❌')+'</b><div>'+title+(hint?'<small>'+hint+'</small>':'')+'</div>';out.append(d)}
+async function head(url){try{const r=await fetch(url+'?c='+Date.now(),{cache:'no-store'});return r}catch(e){return null}}
+function imgSize(url){return new Promise(res=>{const i=new Image();i.onload=()=>res([i.naturalWidth,i.naturalHeight]);i.onerror=()=>res(null);i.src=url+'?c='+Date.now()})}
+(async()=>{
+ row(location.protocol==='https:'||location.hostname==='localhost','Secure address (https)','PWA install needs https. Vercel gives it automatically.');
+ let r=await head('/');
+ row(r&&r.ok&&/NOVA/i.test(await r.clone().text()),'Home page (/) opens','If ❌: index.html is missing from the top level of your project, so Vercel shows 404.');
+ r=await head('/manifest.json');
+ let m=null;if(r&&r.ok){try{m=await r.json()}catch{}}
+ row(!!m,'manifest.json found and valid JSON','If ❌: the file must be named exactly manifest.json (phones rename downloads like manifest_1.json).');
+ if(m){
+  row(!!(m.name&&m.start_url&&m.display==='standalone'),'Manifest has name, start_url and display=standalone');
+  const ic=m.icons||[];
+  row(ic.some(i=>/192/.test(i.sizes))&&ic.some(i=>/512/.test(i.sizes)),'Manifest lists 192 and 512 icons');
+ }
+ for(const [u,sz] of [['/icon-192.png',192],['/icon-512.png',512]]){
+  const s=await imgSize(u);
+  row(!!s&&s[0]===sz&&s[1]===sz,u+' loads at '+sz+'×'+sz,s?('Found size '+s[0]+'×'+s[1]):'If ❌: file missing or misnamed (must be exactly '+u.slice(1)+').');
+ }
+ r=await head('/sw.js');
+ row(!!(r&&r.ok&&/javascript/i.test(r.headers.get('content-type')||'')),'sw.js found (service worker file)','If ❌: file must be named exactly sw.js and sit at the top level.');
+ let reg=null;try{reg=await navigator.serviceWorker.getRegistration()}catch{}
+ row(!!reg,'Service worker is registered','If ❌: open the home page once, wait a few seconds, then refresh this page.');
+ row(matchMedia('(display-mode: standalone)').matches,'Running as installed app','Shows ❌ in the browser. It is ✅ only after you install.');
+ row('Notification' in window,'Notifications supported','Permission now: '+(window.Notification?Notification.permission:'n/a'));
+ row(!!(window.SpeechRecognition||window.webkitSpeechRecognition),'Voice recognition supported','Use Chrome on Android for the microphone.');
+ let dip=null;
+ addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;act.innerHTML='<button id="ib">📲 Install NOVA now</button>';document.getElementById('ib').onclick=async()=>{dip.prompt();await dip.userChoice}});
+ act.innerHTML='<a class="btn" href="/">Open NOVA</a>';
+})();
+</script></body></html>
