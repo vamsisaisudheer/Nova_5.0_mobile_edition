@@ -1,5 +1,5 @@
-const CACHE = 'nova-v5';
-const ASSETS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+const CACHE = 'nova-v6';
+const ASSETS = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
   // Cache each asset separately so one missing file can't break installation
@@ -30,7 +30,7 @@ self.addEventListener('fetch', e => {
         }
         return res;
       })
-      .catch(() => caches.match(e.request).then(r => r || caches.match('/index.html')))
+      .catch(() => caches.match(e.request).then(r => r || caches.match('index.html')))
   );
 });
 
